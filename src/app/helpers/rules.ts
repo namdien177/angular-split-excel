@@ -48,7 +48,7 @@ export function ruleMin(fieldName: string, min: string): IValidationItem {
     // fieldName: string, fieldAsParams: string, min?: number, max?: number
     return {
         rule: ERROR.MIN_LENGTH,
-        messageID: `WAR_VALIDATE_VALUE_IN_RANGE`,
+        messageID: `WAR_VALIDATE_NUM_LEN_MIN`,
         min: Number(min),
         params: [fieldName, Number(min)]
     }
@@ -57,7 +57,7 @@ export function ruleMin(fieldName: string, min: string): IValidationItem {
 export function ruleMax(fieldName: string, max: string) {
     return {
         rule: ERROR.MAX_LENGTH,
-        messageID: `WAR_VALIDATE_VALUE_IN_RANGE`,
+        messageID: `WAR_VALIDATE_NUM_LEN_MAX`,
         max: Number(max),
         params: [fieldName, Number(max)]
     };
