@@ -31,6 +31,31 @@ doctor_name		医師名			String		-	50	-
     this.inputExcel.setValue(this.initValue);
   }
 
+  createRule(arr: string[][]) {
+    const rules: {[field: string]: RuleObject} = {}
+    arr.forEach(prop => {
+        const fieldName = this.toCamel(prop).trim();
+        const fieldJP = prop[2].trim();
+        const fieldType = prop[5].trim();
+        const fieldMinVal = prop[7].trim();
+        const fieldMaxVal = prop[8].trim();
+        const fieldRequired = prop[12].trim();
+
+        if(fieldRequired.length > 0) {
+
+        }
+    })
+  }
+
+  toCamel(s){
+  if (s.match(/([0-9a-z][-_][a-z])/gi)) {
+    return s.replace(/([-_][a-z])/gi, ($1) => {
+      return $1.toUpperCase().replace("-", "").replace("_", "");
+    });
+  }
+  return s;
+};
+
   splitRows(value: string) {
     const rows = value.split(/\n/g);
     return rows.filter(
@@ -45,9 +70,7 @@ doctor_name		医師名			String		-	50	-
     return separatedCellsRows;
   }
 
-  ruleRequired(rowCells: string[]):RuleObject  {
-    const fieldName = rowCells[1];
-    const required = rowCells[4];
+  ruleRequired(fieldName: string):RuleObject  {
     return {
       rule: ERROR.REQUIRED,
       message: `ERROR.REQUIRED_MESSAGE`,
@@ -55,12 +78,8 @@ doctor_name		医師名			String		-	50	-
     }
   }
 
-  ruleMinMax(rowCells: string[]): RuleObject {
+  ruleMinMax(fieldName: string, min?: string, max?: string): RuleObject {
     // fieldName: string, fieldAsParams: string, min?: number, max?: number
-    const fieldKey = rowCells[0];
-    const fieldName = rowCells[1];
-    const min = rowCells[2];
-    const max = rowCells[3];
     if (min?.trim().length > 0) {
       // MIN rule
       return {
