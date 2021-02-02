@@ -1,9 +1,10 @@
 <div class="flex flex-col">
-	<textarea [formControl]="inputExcel" class="border border-gray-500 outline-none shadow bg-gray-200 h-20 w-full resize-none"></textarea>
+	<textarea [formControl]="inputExcel"
+		class="border border-gray-500 outline-none shadow bg-gray-200 h-20 w-full resize-none"></textarea>
 	<hr class="my-2 border border-gray-200">
-	<button class="w-full border-none bg-green-600 text-white py-4">
-    Parse and copy
-  </button>
+	<button (click)="clickCopy()" class="w-full border-none bg-green-600 text-white py-4">
+		Parse and copy
+	</button>
 	<hr class="my-2 border border-gray-200">
 	<pre>
     {{representJSON | json}}
