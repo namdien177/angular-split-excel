@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl } from "@angular/forms";
-import { debounceTime, distinctUntilChanged } from "rxjs/operators";
+import { debounceTime, distinctUntilChanged, filter } from "rxjs/operators";
 import { copyToClipboard, splitCells, splitRows, toCamel } from "./helpers/helpers";
 import { ERROR, IValidationItem } from "./helpers/interface-obj";
 import { ruleRequired, extractRuleDataType, ruleMin, ruleMax } from "./helpers/rules";
@@ -12,24 +12,36 @@ import { ruleRequired, extractRuleDataType, ruleMin, ruleMax } from "./helpers/r
 })
 export class AppComponent implements OnInit {
   name = "Angular";
-  initValue = `examination_and_treatment_progress_contents		　経過及び治療内容			String		-	200	-												-	
-`;
+  initValue = ``;
 
   inputExcel: FormControl = new FormControl();
 
   representJSON;
+  errorMessage;
 
   ngOnInit() {
     this.inputExcel.valueChanges.pipe(
       debounceTime(200),
-      distinctUntilChanged()
+      distinctUntilChanged(),
+      filter(s => {
+        this.errorMessage = null;
+        if(s?.trim().length > 0) {
+          return true;
+        }
+        this.errorMessage = "Input empty"
+        return false;
+      })
     ).subscribe(v => {
-      let filteredRows: any = splitRows(v);
-      filteredRows = splitCells(filteredRows);
-      filteredRows = this.createRule(filteredRows);
-      this.representJSON = filteredRows;
-
-      // this.representJSON = v;
+      this.errorMessage = null;
+      this.representJSON = null;
+      try {
+        let filteredRows: any = splitRows(v);
+        filteredRows = splitCells(filteredRows);
+        filteredRows = this.createRule(filteredRows);
+        this.representJSON = filteredRows;
+      } catch (e) {
+        this.errorMessage = e;
+      }
     });
     this.inputExcel.setValue(this.initValue);
   }
