@@ -80,8 +80,9 @@ export class AppComponent implements OnInit {
           ruleMax(fieldJP, fieldMaxVal)
         )
       }
-
-      rules[fieldName] = rule;
+      if (rule.length > 0) {
+        rules[fieldName] = rule;
+      }
     });
 
     return rules;
