@@ -156,7 +156,7 @@ export function splitRows(value: string) {
         cells => cells[0]?.trim().length !== 0
     ).map(
         cells => cells.replace(/\n/g, '')
-    ).filter(cells => cells.length > 0)
+    ).filter(cells => cells.length > 0 && cells !== '―');
 }
 
 export function splitCells(rows: string[]) {
@@ -164,4 +164,102 @@ export function splitCells(rows: string[]) {
         cells => cells.split(/\t/g)
     );
     return separatedCellsRows;
+}
+
+/**
+ * Improved logic from https://gist.github.com/torjusb/7d6baf4b68370b4ef42f
+ * @param raw
+ * @constructor
+ */
+export function ExcelToArrayParser(raw: string) {
+  const cells: string[] = raw.split("\t");
+  let rows: string[][] = [];
+  let rowTemp: string[] = [];
+  let maxCol: number = 0;
+  cells.forEach((cell) => {
+    // if group cells (previous cell has new line)
+    const matchNewLine = cell.match(/"((?:[^"]*(?:\r\n|\n\r|\n|\r))+[^"]+)"/gm);
+    if (matchNewLine) {
+      const posMatch = cell.indexOf(matchNewLine[0]) || matchNewLine[0].length;
+      const innerCells = [
+        cell.substring(0, posMatch),
+        cell.substring(posMatch),
+      ].filter((s) => s.length !== 0);
+      innerCells.forEach((ic) => {
+        if (ic.match(/^".+\n.+"$/g)) {
+          rowTemp.push(ic.match(/^".+\n.+"$/g)[0].replace(/(^")|("$)/g, ""));
+        } else {
+          const posNewLine = ic.indexOf("\n");
+          if (posNewLine !== -1) {
+            const exceedCells = rowTemp.length - maxCol;
+            if (posNewLine === 0) {
+              if (exceedCells > 0) {
+                maxCol = rowTemp.length;
+              }
+              // push new line
+              rows.push(rowTemp);
+              rowTemp = [];
+              rowTemp.push(ic.replace(/\n/g, ""));
+            } else {
+              // is a cell at the end of a row
+              rowTemp.push(ic.replace(/\n/g, ""));
+              if (exceedCells > 0) {
+                maxCol = rowTemp.length;
+              }
+              rows.push(rowTemp);
+              rowTemp = [];
+            }
+          } else {
+            rowTemp.push(ic);
+          }
+        }
+      });
+    } else {
+      if (cell.match(/^".+\n.+"$/g)) {
+        // in case the cell has newline but not at first or last of the row
+        const parsed = cell.match(/^".+\n.+"$/g)[0].replace(/(^")|("$)/g, "");
+        rowTemp.push(parsed);
+      } else {
+        if (cell.indexOf("\n") !== -1) {
+          // has newline
+          const split = cell.split("\n");
+          // add col to row
+          rowTemp.push(split[0]);
+          const exceedCells = rowTemp.length - maxCol;
+          if (exceedCells > 0) {
+            maxCol = rowTemp.length;
+          }
+          // push a complete row to collection
+          rows.push(rowTemp);
+          // reset row temp with the next split string as the first col
+          rowTemp = [split[1]];
+        } else {
+          rowTemp.push(cell);
+        }
+      }
+    }
+  });
+  const exceedCells = rowTemp.length - maxCol;
+  if (rowTemp.length > 0 && rowTemp.length !== 1 && maxCol !== 1) {
+    if (exceedCells > 0) {
+      maxCol = rowTemp.length;
+    }
+    rows.push(rowTemp);
+  }
+
+  function fillEmptyCells(numberOfCells: number = 0) {
+    const emptyCells: string[] = [];
+    for (let i = 0; i < numberOfCells; i++) {
+      emptyCells.push("");
+    }
+    return emptyCells;
+  }
+
+  console.log(rows);
+  return rows.map((cells) => {
+    if (cells.length < maxCol) {
+      cells.push(...fillEmptyCells(maxCol - cells.length));
+    }
+    return cells;
+  });
 }

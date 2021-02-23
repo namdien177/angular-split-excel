@@ -1,13 +1,15 @@
 import { ERROR, IValidationItem } from "./interface-obj";
 
 
-export function extractRuleDataType(fieldName: string, dataType: string, maxNumber: string): IValidationItem {
+export function extractRuleDataType(fieldName: string, dataType: string, maxNumber: string, minNumber: string, fracment: string): IValidationItem {
     switch (dataType.toLowerCase()) {
         case 'dt':
             return ruleDate(fieldName);
         case 'number':
         case 'num':
             return ruleNumber(fieldName, maxNumber);
+        case 'decimal':
+            return ruleDecimal(fieldName, maxNumber, fracment);
     }
     return null;
 }
@@ -33,6 +35,14 @@ export function ruleNumber(fieldName: string, maxNumber: string): IValidationIte
         rule: ERROR.NUMBER,
         messageID: `WAR_VALIDATE_NUM_LEN_MAX`,
         params: [fieldName, Number(maxNumber)]
+    }
+}
+
+export function ruleDecimal(fieldName: string, max: string, fracment: string) {
+    return {
+      rule: ERROR.DECIMAL,
+      messageID: 'WAR_VALIDATE_DECIMAL',
+      params: [fieldName, max, fracment]
     }
 }
 
