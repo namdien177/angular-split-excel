@@ -178,7 +178,7 @@ export function ExcelToArrayParser(raw: string) {
   let maxCol: number = 0;
   cells.forEach((cell) => {
     // if group cells (previous cell has new line)
-    const matchNewLine = cell.match(/"((?:[^"]*(?:\r\n|\n\r|\n|\r))+[^"]+)"/gm);
+    const matchNewLine = cell.replace(/\"\"/g, '\'').match(/"((?:[^"]*(?:\r\n|\n\r|\n|\r))+[^"]+)"/gm);
     if (matchNewLine) {
       const posMatch = cell.indexOf(matchNewLine[0]) || matchNewLine[0].length;
       const innerCells = [
@@ -186,8 +186,8 @@ export function ExcelToArrayParser(raw: string) {
         cell.substring(posMatch),
       ].filter((s) => s.length !== 0);
       innerCells.forEach((ic) => {
-        if (ic.match(/^".+\n.+"$/g)) {
-          rowTemp.push(ic.match(/^".+\n.+"$/g)[0].replace(/(^")|("$)/g, ""));
+        if (ic.match(/^"(.+\n+.*)+"$/g)) {
+          rowTemp.push(ic.match(/^"(.+\n+.*)+"$/g)[0].replace(/(^")|("$)/g, ""));
         } else {
           const posNewLine = ic.indexOf("\n");
           if (posNewLine !== -1) {

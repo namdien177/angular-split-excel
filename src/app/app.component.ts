@@ -37,8 +37,6 @@ export class AppComponent implements OnInit {
       try {
         let filteredRows: any = v;
         filteredRows = ExcelToArrayParser(v);
-        // filteredRows = filteredRows.map(s => toCamel(s))
-        // filteredRows = splitCells(filteredRows);
         filteredRows = this.createRule(filteredRows);
         this.representJSON = filteredRows;
       } catch (e) {
