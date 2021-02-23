@@ -178,7 +178,8 @@ export function ExcelToArrayParser(raw: string) {
   let maxCol: number = 0;
   cells.forEach((cell) => {
     // if group cells (previous cell has new line)
-    const matchNewLine = cell.replace(/\"\"/g, '\'').match(/"((?:[^"]*(?:\r\n|\n\r|\n|\r))+[^"]+)"/gm);
+    const matchNewLine = cell.replace(/\"\"/g, '\'') // prevent mis-match on multiple line/dual braces cause wrong row identify
+    .match(/"((?:[^"]*(?:\r\n|\n\r|\n|\r))+[^"]+)"/gm);
     if (matchNewLine) {
       const posMatch = cell.indexOf(matchNewLine[0]) || matchNewLine[0].length;
       const innerCells = [
@@ -262,4 +263,63 @@ export function ExcelToArrayParser(raw: string) {
     }
     return cells;
   });
+}
+
+/**
+ * Generate basic model file content
+ * @param {[string, string][]} arrCellsPased Parsed cells to 2dimensions array by specialized function.
+ * @param {string} interfaceName interface name, default `IFormData`
+ * @param {string} className class which inherits interface, default `FormData`
+ * @param {boolean} looseProp add question mark to property, default `false`
+ */
+export function genModel(arrCellsPased: [string, string][], interfaceName, className, looseProp) {
+  function propType(type) {
+    switch (type.toLowerCase()) {
+      case "integer":
+      case "double":
+      case "number":
+      case "numb":
+        return "number";
+    }
+
+    return "string";
+  }
+
+  if (!interfaceName) {
+    interfaceName = "IFormData";
+  }
+
+  if (!className) {
+    className = "FormData";
+  }
+
+  const eachPropAttr = arrCellsPased
+    .filter((c) => !!c && !!c[0] && !!c[1])
+    .map((c) => {
+      const propName = toCamel(c[0]);
+      const dataType = propType(c[1]);
+      const row = `${propName}${looseProp ? "?" : ""}: ${dataType}`;
+      return {
+        modelInterface: row + ";",
+        modelClass: `public ${row},`,
+      };
+    });
+
+  const objModel = `/**
+ * Interface represent for data of form
+ */
+  export interface ${interfaceName} {${eachPropAttr
+    .map((c) => c.modelInterface)
+    .join("\n")}}
+  
+  /**
+ * Class represent for data of form
+ */
+export class ${className} implements ${interfaceName} {
+  constructor(
+    ${eachPropAttr.map((c) => c.modelClass).join("\n")}
+  ) {}
+}
+  `;
+  return objModel;
 }

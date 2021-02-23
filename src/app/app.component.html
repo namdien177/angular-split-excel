@@ -5,6 +5,9 @@
 	<button (click)="clickCopy()" class="w-full border-none bg-green-600 text-white py-4">
 		Parse and copy
 	</button>
+	<button (click)="clickModels()" class="w-full border-none bg-blue-600 text-white py-4">
+		Parse and copy model
+	</button>
 	<hr class="my-2 border border-gray-200">
 	<div *ngIf="errorMessage?.length > 0" class="m-2 p-2 border-solid border-l-2 text-red-600 border-red-600 bg-red-100">
 		{{errorMessage}}

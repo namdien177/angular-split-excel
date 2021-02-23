@@ -226,7 +226,8 @@ function ExcelToArrayParser(raw) {
     let maxCol = 0;
     cells.forEach((cell) => {
         // if group cells (previous cell has new line)
-        const matchNewLine = cell.match(/"((?:[^"]*(?:\r\n|\n\r|\n|\r))+[^"]+)"/gm);
+        const matchNewLine = cell.replace(/\"\"/g, '\'') // prevent mis-match on multiple line/dual braces cause wrong row identify
+            .match(/"((?:[^"]*(?:\r\n|\n\r|\n|\r))+[^"]+)"/gm);
         if (matchNewLine) {
             const posMatch = cell.indexOf(matchNewLine[0]) || matchNewLine[0].length;
             const innerCells = [
@@ -234,8 +235,8 @@ function ExcelToArrayParser(raw) {
                 cell.substring(posMatch),
             ].filter((s) => s.length !== 0);
             innerCells.forEach((ic) => {
-                if (ic.match(/^".+\n.+"$/g)) {
-                    rowTemp.push(ic.match(/^".+\n.+"$/g)[0].replace(/(^")|("$)/g, ""));
+                if (ic.match(/^"(.+\n+.*)+"$/g)) {
+                    rowTemp.push(ic.match(/^"(.+\n+.*)+"$/g)[0].replace(/(^")|("$)/g, ""));
                 }
                 else {
                     const posNewLine = ic.indexOf("\n");
@@ -365,8 +366,6 @@ let AppComponent = class AppComponent {
             try {
                 let filteredRows = v;
                 filteredRows = Object(_helpers_helpers__WEBPACK_IMPORTED_MODULE_6__["ExcelToArrayParser"])(v);
-                // filteredRows = filteredRows.map(s => toCamel(s))
-                // filteredRows = splitCells(filteredRows);
                 filteredRows = this.createRule(filteredRows);
                 this.representJSON = filteredRows;
             }

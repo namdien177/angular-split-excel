@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { FormControl } from "@angular/forms";
 import { debounceTime, distinctUntilChanged, filter } from "rxjs/operators";
-import { copyToClipboard, ExcelToArrayParser, splitCells, splitRows, toCamel } from "./helpers/helpers";
+import { copyToClipboard, ExcelToArrayParser, genModel, splitCells, splitRows, toCamel } from "./helpers/helpers";
 import { ERROR, IValidationItem } from "./helpers/interface-obj";
 import { ruleRequired, extractRuleDataType, ruleMin, ruleMax } from "./helpers/rules";
 
@@ -16,7 +16,7 @@ export class AppComponent implements OnInit {
 
   inputExcel: FormControl = new FormControl();
 
-  representJSON;
+  representJSON: { [field: string]: IValidationItem[] };
   errorMessage;
 
   ngOnInit() {
@@ -91,6 +91,26 @@ export class AppComponent implements OnInit {
 
   clickCopy() {
     copyToClipboard(JSON.stringify(this.representJSON))
+  }
+
+  clickModels() {
+      if(!this.representJSON) {
+        return;
+      }
+
+      const arrRw: [string, string][] = [];
+      Object.keys(this.representJSON).forEach(field => {
+          let typeDefault = 'string';
+          const typeNum = this.representJSON[field].find(rule => {
+            return rule.rule === ERROR.DECIMAL || rule.rule === ERROR.NUMBER
+          })
+          if (typeNum) {
+            typeDefault = 'number';
+          }
+          arrRw.push([field, typeDefault]);
+      });
+      const model = genModel(arrRw, undefined, undefined, true);
+       copyToClipboard(model);
   }
 }
 
